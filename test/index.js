@@ -1691,3 +1691,136 @@ describe('Symbolic links', function() {
     done();
   });
 });
+
+describe('Callback option', function() {
+
+  it('calls the function on path object', function(done) {
+
+    var list = [];
+    var callback = function(found) {
+      list.push(found);
+    };
+
+    var pathObj = {
+      path: '',
+      callback: callback,
+      name: 'index',
+      extensions: ['.json'],
+      cwd: 'test/fixtures/fined',
+    };
+
+    var expected = {
+      path: path.resolve(cwd, 'test/fixtures/fined/index.json'),
+      extension: '.json',
+    };
+
+    var result = fined(pathObj);
+
+    expect(result).toEqual(expected);
+    expect(list.length).toEqual(1);
+    expect(list[0]).toEqual(expected);
+    done();
+  });
+
+  it('calls the function on default object', function(done) {
+
+    var list = [];
+    var callback = function(found) {
+      list.push(found);
+    };
+
+    var pathObj = {
+      path: '',
+      name: 'index',
+      extensions: ['.json'],
+      cwd: 'test/fixtures/fined/turtles',
+    };
+
+    var defaultObj = {
+      callback: callback,
+    };
+
+    var expected = {
+      path: path.resolve(cwd, 'test/fixtures/fined/turtles/index.json'),
+      extension: '.json',
+    };
+
+    var result = fined(pathObj, defaultObj);
+
+    expect(result).toEqual(expected);
+    expect(list.length).toEqual(1);
+    expect(list[0]).toEqual(expected);
+    done();
+  });
+
+  it('stops the search if the function returns falsy', function(done) {
+
+    var list = [];
+    var callback = function(found) {
+      list.push(found);
+      return false;
+    };
+
+    var pathObj = {
+      path: '',
+      name: 'index',
+      extensions: ['.json'],
+      cwd: 'test/fixtures/fined/turtles/turtles',
+      findUp: true,
+      callback: callback,
+    };
+
+    var expected = {
+      path: path.resolve(cwd, 'test/fixtures/fined/turtles/turtles/index.json'),
+      extension: '.json',
+    };
+
+    var result = fined(pathObj);
+
+    expect(result).toEqual(expected);
+    expect(list.length).toEqual(1);
+    expect(list[0]).toEqual(expected);
+    done();
+  });
+
+  it('continues search if the function returns truthy', function(done) {
+
+    var list = [];
+    var callback = function(found) {
+      list.push(found);
+      return true;
+    };
+
+    var pathObj = {
+      path: '',
+      name: 'index',
+      extensions: ['.json'],
+      cwd: 'test/fixtures/fined/turtles/turtles',
+      findUp: true,
+      callback: callback,
+    };
+
+    var expected = [
+      {
+        path: path.resolve(cwd, 'test/fixtures/fined/turtles/turtles/index.json'),
+        extension: '.json',
+      }, {
+        path: path.resolve(cwd, 'test/fixtures/fined/turtles/index.json'),
+        extension: '.json',
+      }, {
+        path: path.resolve(cwd, 'test/fixtures/fined/index.json'),
+        extension: '.json',
+      },
+    ];
+
+    var result = fined(pathObj);
+
+    expect(result).toEqual(expected[2]);
+    expect(list.length).toEqual(3);
+    expect(list[0]).toEqual(expected[0]);
+    expect(list[1]).toEqual(expected[1]);
+    expect(list[2]).toEqual(expected[2]);
+    done();
+  });
+
+});

@@ -1,6 +1,6 @@
 # Fined [![Build Status][travis-image]][travis-url] [![Build Status][appveyor-image]][appveyor-url]
 
-> Find a file given a declaration of locations
+> Find files given a declaration of locations
 
 [![NPM](https://nodei.co/npm/fined.png)](https://nodei.co/npm/fined/)
 
@@ -45,10 +45,13 @@ fined({ path: '~', extensions: { 'rc': 'some-special-rc-loader' } }, opts);
    * **extensions**: [string | array | object] : extensions.
    * **cwd**: a base directory of `path` and for finding up.
    * **findUp**: [boolean] : a flag to find up.
+   * **callback**: [function] : a function to be called for each find; it gets
+     a single argument (see return value) and, if the **findUp** option is truthy,
+     it can continue the search up the directories by returning a truthy value.
 
 #### Return:
 
-This function returns a plain object which consists of following properties if a file exists otherwise null.
+This function returns its last find, as a plain object having the following properties if a file exists, otherwise null.
 
    * **path** : an absolute path
    * **extension** : a string or a plain object of extension.

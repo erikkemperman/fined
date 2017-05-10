@@ -4,6 +4,7 @@ var fs = require('fs');
 var path = require('path');
 
 var isString = require('lodash.isstring');
+var isFunction = require('lodash.isfunction');
 var isPlainObject = require('lodash.isplainobject');
 var isEmpty = require('lodash.isempty');
 var pick = require('lodash.pick');
@@ -63,6 +64,7 @@ function expandPath(pathObj, defaultObj) {
   basedir = path.resolve(expandTilde(basedir));
 
   var findUp = !!pathObj.findUp;
+  var callback = isFunction(pathObj.callback) ? pathObj.callback : false;
 
   var parsed = parsePath(filePath);
   if (parsed.isAbsolute) {
@@ -78,24 +80,36 @@ function expandPath(pathObj, defaultObj) {
     path: filePath,
     basedir: basedir,
     findUp: findUp,
+    callback: callback,
     extArr: extArr,
     extMap: extMap,
   };
 }
 
 function findWithExpandedPath(expanded) {
-  var found = expanded.findUp ?
-    findUpFile(expanded.basedir, expanded.path, expanded.extArr) :
-    findFile(expanded.basedir, expanded.path, expanded.extArr);
+  var basedir = expanded.basedir;
+  var last = null;
 
-  if (!found) {
-    return null;
-  }
+  do {
+    var found = expanded.findUp ?
+      findUpFile(basedir, expanded.path, expanded.extArr) :
+      findFile(basedir, expanded.path, expanded.extArr);
 
-  if (expanded.extMap) {
-    found.extension = pick(expanded.extMap, found.extension);
-  }
-  return found;
+    if (!found) {
+      return last;
+    }
+
+    if (expanded.extMap) {
+      found.extension = pick(expanded.extMap, found.extension);
+    }
+
+    if (!expanded.callback || !expanded.callback(found) || !expanded.findUp) {
+      return found;
+    }
+
+    basedir = path.dirname(basedir);
+    last = found;
+  } while (true);
 }
 
 function findFile(basedir, relpath, extArr) {

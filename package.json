@@ -28,6 +28,7 @@
     "expand-tilde": "^1.2.1",
     "lodash.assignwith": "^4.0.7",
     "lodash.isempty": "^4.2.1",
+    "lodash.isfunction": "^3.0.8",
     "lodash.isplainobject": "^4.0.4",
     "lodash.isstring": "^4.0.1",
     "lodash.pick": "^4.2.1",
